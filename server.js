@@ -62,7 +62,7 @@ async function enviarWhatsApp(para, mensaje) {
 }
 
 // ─── BASE DE DATOS ─────────────────────────────────────────────────────────
-const DB_PATH = path.join(__dirname, 'db.json');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'db.json');
 
 function leerDB() {
   if (!fs.existsSync(DB_PATH)) {
