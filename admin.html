@@ -339,7 +339,7 @@
   // --- ACCIONES ---
   function abrirWA(telefono, nombre) {
     const tel = telefono.replace(/\D/g, '');
-    const msg = encodeURIComponent(`Hola ${nombre}, soy yo con lo de los calzones 😊`);
+    const msg = encodeURIComponent(`Hola ${nombre}, te escribo por tu pedido de Calzones Rotos.`);
     window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
   }
 
