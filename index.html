@@ -453,13 +453,19 @@
     renderBolsas(libres);
   }
 
+  const PRECIO_BOLSA = 5000;
+
+  function formatPeso(n) {
+    return '$ ' + n.toLocaleString('es-CL');
+  }
+
   function renderBolsas(libres) {
     const grid = document.getElementById('bolsas-grid');
     grid.innerHTML = '';
     for (let i = 1; i <= 6; i++) {
       const btn = document.createElement('button');
       btn.className = 'bolsa-btn' + (i === bolsasSeleccionadas ? ' selected' : '');
-      btn.innerHTML = `${i}<span>${i * 12} un.</span>`;
+      btn.innerHTML = `${i}<span>${formatPeso(i * PRECIO_BOLSA)}</span>`;
       btn.disabled = i > libres || !inscripcionAbierta;
       btn.onclick = () => { bolsasSeleccionadas = i; renderBolsas(libres); actualizarResumen(); validarForm(); };
       grid.appendChild(btn);
@@ -473,8 +479,8 @@
       res.classList.add('visible');
       res.innerHTML = `
         <div class="resumen-fila">
-          <strong>${bolsasSeleccionadas} bolsa${bolsasSeleccionadas > 1 ? 's' : ''}</strong>
-          <strong>${bolsasSeleccionadas * 12} calzones</strong>
+          <strong>${bolsasSeleccionadas} bolsa${bolsasSeleccionadas > 1 ? 's' : ''} · ${bolsasSeleccionadas * 12} calzones</strong>
+          <strong>${formatPeso(bolsasSeleccionadas * PRECIO_BOLSA)}</strong>
         </div>
         <div class="resumen-fila">
           <span>Entrega</span><span>${cal.diaEntrega || '—'} desde las 14:00</span>
