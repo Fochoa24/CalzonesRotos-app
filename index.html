@@ -113,17 +113,22 @@
     }
     .cal-titulo { font-size: 12px; font-weight: 600; text-transform: uppercase;
       letter-spacing: .8px; color: var(--gray-400); margin-bottom: 10px; }
-    .cal-semana { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-semana-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .cal-semana { display: flex; gap: 6px; width: max-content; padding-bottom: 2px; }
     .cal-dia {
-      text-align: center; padding: 6px 2px; border-radius: 8px;
-      font-size: 11px; color: var(--gray-400);
+      width: 52px; flex-shrink: 0;
+      text-align: center; padding: 8px 4px; border-radius: 10px;
+      font-size: 12px; font-weight: 600; color: var(--gray-400);
+      border: 1.5px solid transparent;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      overflow: hidden;
     }
-    .cal-dia .nombre { font-weight: 600; margin-bottom: 2px; }
-    .cal-dia .rol    { font-size: 9px; line-height: 1.3; }
-    .cal-dia.inscripcion { background: var(--teal-bg); color: var(--teal-dark); }
-    .cal-dia.hornea      { background: var(--amber-bg); color: var(--amber); }
-    .cal-dia.cerrado-dia { background: var(--gray-100); color: var(--gray-400); }
-    .cal-dia.hoy         { outline: 2px solid var(--teal); outline-offset: 1px; }
+    .cal-dia .nombre { font-size: 13px; font-weight: 700; }
+    .cal-dia .rol    { font-size: 9px; font-weight: 400; line-height: 1.3; text-align: center; }
+    .cal-dia.inscripcion { background: var(--teal-bg); color: var(--teal-dark); border-color: #9FE1CB; }
+    .cal-dia.hornea      { background: var(--amber-bg); color: var(--amber);     border-color: #FAC775; }
+    .cal-dia.cerrado-dia { background: var(--gray-100); color: var(--gray-400);  border-color: var(--gray-200); }
+    .cal-dia.hoy         { outline: 2px solid var(--teal); outline-offset: 2px; }
 
     /* ── FORM ───────────────────────────────────────────────────────── */
     .form-card {
@@ -163,12 +168,6 @@
     /* ── RESPONSIVE MÓVIL ──────────────────────────────────────────── */
     @media (max-width: 430px) {
       .page { padding: 1rem 0.75rem; }
-
-      /* Calendario scrolleable horizontalmente */
-      .calendario { padding: 1rem 0.75rem; }
-      .cal-semana-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-      .cal-semana { gap: 6px; width: max-content; }
-      .cal-dia { width: 46px; padding: 6px 4px; font-size: 11px; }
 
       /* Bolsas: 3 columnas × 2 filas */
       .bolsas-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -368,10 +367,10 @@
     0: { clase:'cerrado-dia', rol:'Cerrado' },
     1: { clase:'inscripcion', rol:'Inscripción' },
     2: { clase:'inscripcion', rol:'Inscripción' },
-    3: { clase:'hornea',      rol:'Hornea\n14:00 entrega' },
+    3: { clase:'hornea',      rol:'Hornea\n14:00' },
     4: { clase:'inscripcion', rol:'Inscripción' },
     5: { clase:'inscripcion', rol:'Inscripción' },
-    6: { clase:'hornea',      rol:'Hornea\n14:00 entrega' },
+    6: { clase:'hornea',      rol:'Hornea\n14:00' },
   };
 
   function renderCalendario() {
