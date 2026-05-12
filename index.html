@@ -33,6 +33,7 @@
       color: var(--gray-900);
       min-height: 100vh;
       padding-bottom: 4rem;
+      overflow-x: hidden;
     }
 
     header {
@@ -160,17 +161,19 @@
     .bolsa-btn span { font-size: 9px; font-weight: 400; color: var(--gray-400); }
 
     /* ── RESPONSIVE MÓVIL ──────────────────────────────────────────── */
-    @media (max-width: 400px) {
+    @media (max-width: 430px) {
       .page { padding: 1rem 0.75rem; }
 
-      .calendario { padding: 1rem 0.6rem; overflow: hidden; }
-      .cal-semana { gap: 2px; }
-      .cal-dia { padding: 5px 1px; font-size: 10px; }
-      .cal-dia .rol { font-size: 8px; }
+      /* Calendario scrolleable horizontalmente */
+      .calendario { padding: 1rem 0.75rem; }
+      .cal-semana-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+      .cal-semana { gap: 6px; width: max-content; }
+      .cal-dia { width: 46px; padding: 6px 4px; font-size: 11px; }
 
-      .bolsas-grid { gap: 5px; }
-      .bolsa-btn { font-size: 14px; }
-      .bolsa-btn span { font-size: 8px; }
+      /* Bolsas: 3 columnas × 2 filas */
+      .bolsas-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .bolsa-btn { font-size: 18px; aspect-ratio: auto; padding: 12px 4px; }
+      .bolsa-btn span { font-size: 10px; }
     }
     .bolsa-btn:hover:not(:disabled) { border-color: var(--teal); background: var(--teal-bg); color: var(--teal-dark); }
     .bolsa-btn.selected { background: var(--teal); border-color: var(--teal-dark); color: white; }
@@ -267,7 +270,9 @@
   <!-- CALENDARIO MINI -->
   <div class="calendario">
     <div class="cal-titulo">Calendario semanal</div>
-    <div class="cal-semana" id="cal-semana"></div>
+    <div class="cal-semana-wrap">
+      <div class="cal-semana" id="cal-semana"></div>
+    </div>
   </div>
 
   <!-- ALERTA ÚLTIMO DÍA -->
