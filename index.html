@@ -158,6 +158,20 @@
       gap: 2px; color: var(--gray-700); font-family: inherit;
     }
     .bolsa-btn span { font-size: 9px; font-weight: 400; color: var(--gray-400); }
+
+    /* ── RESPONSIVE MÓVIL ──────────────────────────────────────────── */
+    @media (max-width: 400px) {
+      .page { padding: 1rem 0.75rem; }
+
+      .calendario { padding: 1rem 0.6rem; overflow: hidden; }
+      .cal-semana { gap: 2px; }
+      .cal-dia { padding: 5px 1px; font-size: 10px; }
+      .cal-dia .rol { font-size: 8px; }
+
+      .bolsas-grid { gap: 5px; }
+      .bolsa-btn { font-size: 14px; }
+      .bolsa-btn span { font-size: 8px; }
+    }
     .bolsa-btn:hover:not(:disabled) { border-color: var(--teal); background: var(--teal-bg); color: var(--teal-dark); }
     .bolsa-btn.selected { background: var(--teal); border-color: var(--teal-dark); color: white; }
     .bolsa-btn.selected span { color: rgba(255,255,255,.7); }
