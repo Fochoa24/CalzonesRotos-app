@@ -136,6 +136,22 @@
     .empty { text-align: center; padding: 2.5rem; color: var(--gray-400); font-size: 14px; }
     .empty-icon { font-size: 36px; margin-bottom: .75rem; }
 
+    /* ERROR SERVIDOR */
+    .error-servidor {
+      background: var(--red-bg); border: 1px solid #F7C1C1;
+      border-radius: var(--radius-lg); padding: 1.1rem 1.25rem;
+      margin-bottom: 1.25rem; display: none;
+    }
+    .error-servidor.visible { display: flex; align-items: center; gap: 12px; }
+    .error-servidor-texto { flex: 1; font-size: 13px; color: var(--red); }
+    .error-servidor-texto strong { display: block; font-size: 14px; margin-bottom: 3px; }
+    .btn-reintentar {
+      padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      background: var(--red); color: white; border: none; cursor: pointer; font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn-reintentar:hover { opacity: .85; }
+
     /* SPINNER */
     .spinner {
       width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4);
@@ -266,6 +282,15 @@
     </button>
   </div>
 
+  <!-- ERROR SERVIDOR -->
+  <div class="error-servidor" id="error-servidor">
+    <div class="error-servidor-texto">
+      <strong>No se pudo conectar al servidor</strong>
+      Los pedidos no se pudieron cargar. Verifica que el servidor esté encendido.
+    </div>
+    <button class="btn-reintentar" onclick="cargarEstado()">Reintentar</button>
+  </div>
+
   <!-- PEDIDOS -->
   <div class="seccion-titulo">Pedidos de esta horneada</div>
   <div id="lista-pedidos">
@@ -308,17 +333,20 @@
   let data = { abierta: true, cuposOcupados: 0, pedidos: [] };
 
   async function cargarEstado() {
+    const bannerError = document.getElementById('error-servidor');
     try {
       const r = await fetch(`${API}/api/estado`);
-      if (!r.ok) throw new Error();
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const json = await r.json();
       data = {
         abierta: json.calendario?.inscripcionAbierta ?? true,
         cuposOcupados: json.cuposOcupados ?? 0,
         pedidos: json.pedidos ?? [],
       };
-    } catch {
-      // Si no hay servidor, mantiene data vacía
+      bannerError.classList.remove('visible');
+    } catch (e) {
+      console.error('Error al cargar estado:', e);
+      bannerError.classList.add('visible');
     }
     render();
   }

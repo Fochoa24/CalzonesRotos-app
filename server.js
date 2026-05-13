@@ -1,30 +1,24 @@
 /**
  * CALZONES ROTOS — Servidor Backend v2
  * ──────────────────────────────────────
- * Tecnologías: Node.js + Express + Twilio (WhatsApp) + node-cron
+ * Tecnologías: Node.js + Express + Twilio (WhatsApp) + node-cron + Firestore
  *
- * INSTALACIÓN:
- *   npm install express twilio cors node-cron dotenv
- *
- * VARIABLES DE ENTORNO (.env):
+ * VARIABLES DE ENTORNO:
+ *   FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}  ← JSON completo en una línea
  *   TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxx
  *   TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxx
  *   TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
  *   HERMANA_WHATSAPP=whatsapp:+56912345678
  *   PORT=3000
- *
- * PARA PRODUCCIÓN:
- *   Exponer con ngrok: npx ngrok http 3000
- *   Webhook en Twilio: https://TU-URL.ngrok.io/webhook/whatsapp
  */
 
 require('dotenv').config();
-const express  = require('express');
-const cors     = require('cors');
-const twilio   = require('twilio');
-const cron     = require('node-cron');
-const fs       = require('fs');
-const path     = require('path');
+const express = require('express');
+const cors    = require('cors');
+const twilio  = require('twilio');
+const cron    = require('node-cron');
+const path    = require('path');
+const admin   = require('firebase-admin');
 
 const { obtenerEstado, esHoraCierre } = require('./calendario');
 
@@ -33,6 +27,31 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname)));
+
+// ─── FIREBASE ADMIN / FIRESTORE ────────────────────────────────────────────
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+
+const firestore  = admin.firestore();
+const ESTADO_REF = firestore.collection('calzonesrotos').doc('estado');
+
+async function leerDB() {
+  const snap = await ESTADO_REF.get();
+  if (!snap.exists) {
+    const inicial = { cuposOcupados: 0, pedidos: [] };
+    await ESTADO_REF.set(inicial);
+    return inicial;
+  }
+  return snap.data();
+}
+
+async function guardarDB(data) {
+  await ESTADO_REF.set(data);
+}
+
+function idUnico() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
 
 // ─── TWILIO ────────────────────────────────────────────────────────────────
 const TWILIO_OK = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN &&
@@ -61,37 +80,15 @@ async function enviarWhatsApp(para, mensaje) {
   }
 }
 
-// ─── BASE DE DATOS ─────────────────────────────────────────────────────────
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'db.json');
-fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-
-function leerDB() {
-  if (!fs.existsSync(DB_PATH)) {
-    const inicial = { cuposOcupados: 0, pedidos: [] };
-    fs.writeFileSync(DB_PATH, JSON.stringify(inicial, null, 2));
-    return inicial;
-  }
-  return JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
-}
-
-function guardarDB(data) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-}
-
-function idUnico() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
 // ─── CIERRE AUTOMÁTICO ─────────────────────────────────────────────────────
 async function evaluarCierreHorneada() {
-  const db = leerDB();
+  const db = await leerDB();
   const pendientes = db.pedidos.filter(p => p.estado === 'pendiente');
   if (pendientes.length === 0) return;
 
   const hermanaWA = process.env.HERMANA_WHATSAPP?.replace('whatsapp:', '');
 
   if (db.cuposOcupados < 6) {
-    // CANCELAR: no se llenaron los 6 cupos
     console.log(`⚠️ Cierre: ${db.cuposOcupados}/6 cupos. Cancelando...`);
 
     let resumenHermana = `⚠️ *Horneada cancelada*\n\n`;
@@ -106,10 +103,9 @@ async function evaluarCierreHorneada() {
     await enviarWhatsApp(hermanaWA, resumenHermana);
     db.cuposOcupados = 0;
     db.pedidos = [];
-    guardarDB(db);
+    await guardarDB(db);
 
   } else {
-    // COMPLETA: recordarle a la hermana que confirme mañana
     const cal = obtenerEstado();
     const diaEntrega = cal.diaEntrega || 'mañana';
     let msg = `✅ *¡Horneada completa!* 6/6 cupos llenos.\n\n`;
@@ -129,8 +125,8 @@ cron.schedule('* * * * *', () => {
 // ─── RUTAS API ─────────────────────────────────────────────────────────────
 
 // GET /api/estado
-app.get('/api/estado', (req, res) => {
-  const db  = leerDB();
+app.get('/api/estado', async (req, res) => {
+  const db  = await leerDB();
   const cal = obtenerEstado();
   res.json({ ...db, calendario: cal });
 });
@@ -148,7 +144,7 @@ app.post('/api/pedido', async (req, res) => {
     return res.status(409).json({ error: cal.mensaje });
   }
 
-  const db = leerDB();
+  const db = await leerDB();
 
   if (db.cuposOcupados >= 6) {
     return res.status(409).json({ error: 'No hay cupos disponibles en esta horneada' });
@@ -173,12 +169,11 @@ app.post('/api/pedido', async (req, res) => {
 
   db.pedidos.push(pedido);
   db.cuposOcupados += parseInt(bolsas);
-  guardarDB(db);
+  await guardarDB(db);
 
-  const hermanaWA     = process.env.HERMANA_WHATSAPP?.replace('whatsapp:', '');
+  const hermanaWA       = process.env.HERMANA_WHATSAPP?.replace('whatsapp:', '');
   const libresRestantes = 6 - db.cuposOcupados;
 
-  // Notificar hermana
   let msgH = `🛒 *Nuevo pedido — ${pedido.nombre}*\n\n`;
   msgH += `📦 ${pedido.bolsas} bolsa${pedido.bolsas > 1 ? 's' : ''} (${pedido.unidades} calzones)\n`;
   msgH += `📍 ${pedido.direccion}\n`;
@@ -193,45 +188,44 @@ app.post('/api/pedido', async (req, res) => {
 });
 
 // POST /api/confirmar-horneada
-app.post('/api/confirmar-horneada', (req, res) => {
-  const db = leerDB();
+app.post('/api/confirmar-horneada', async (req, res) => {
+  const db = await leerDB();
   const pendientes = db.pedidos.filter(p => p.estado === 'pendiente');
   if (pendientes.length === 0) {
     return res.status(400).json({ error: 'No hay pedidos pendientes' });
   }
   pendientes.forEach(p => { p.estado = 'confirmado'; });
-  guardarDB(db);
+  await guardarDB(db);
   res.json({ ok: true, confirmados: pendientes.length });
 });
 
-// POST /api/nueva-horneada  (manual reset desde el panel admin)
-app.post('/api/nueva-horneada', (req, res) => {
-  const db = leerDB();
+// POST /api/nueva-horneada
+app.post('/api/nueva-horneada', async (req, res) => {
+  const db = await leerDB();
   db.cuposOcupados = 0;
   db.pedidos = [];
-  guardarDB(db);
+  await guardarDB(db);
   console.log('✓ Nueva horneada abierta manualmente desde el panel admin');
   res.json({ ok: true });
 });
 
 // POST /api/pedido/:id/entregar
-app.post('/api/pedido/:id/entregar', (req, res) => {
-  const db = leerDB();
+app.post('/api/pedido/:id/entregar', async (req, res) => {
+  const db = await leerDB();
   const pedido = db.pedidos.find(p => p.id === req.params.id);
   if (!pedido) return res.status(404).json({ error: 'Pedido no encontrado' });
 
   pedido.estado      = 'entregado';
   pedido.entregadoEn = new Date().toISOString();
-  guardarDB(db);
+  await guardarDB(db);
 
-  // Reset automático cuando todos están entregados
   const todosEntregados = db.pedidos.every(
     p => p.estado === 'entregado' || p.estado === 'cancelado'
   );
   if (todosEntregados && db.pedidos.length > 0) {
     db.cuposOcupados = 0;
     db.pedidos = [];
-    guardarDB(db);
+    await guardarDB(db);
     console.log('✓ Todos entregados → cupos reseteados automáticamente');
   }
 
@@ -245,7 +239,7 @@ app.post('/webhook/whatsapp', async (req, res) => {
   if (From !== hermanaWA) return res.sendStatus(200);
 
   const cmd = (Body || '').toLowerCase().trim();
-  const db  = leerDB();
+  const db  = await leerDB();
   const cal = obtenerEstado();
   const twiml = new twilio.twiml.MessagingResponse();
   let respuesta = '';
@@ -256,7 +250,7 @@ app.post('/webhook/whatsapp', async (req, res) => {
       respuesta = '⚠️ No hay pedidos pendientes para confirmar.';
     } else {
       pendientes.forEach(p => { p.estado = 'confirmado'; });
-      guardarDB(db);
+      await guardarDB(db);
       const lista = pendientes.map((p, i) => `${i+1}. ${p.nombre} — ${p.telefono}`).join('\n');
       respuesta = `✅ *Horneada confirmada* (${pendientes.length} cliente${pendientes.length !== 1 ? 's' : ''})\n\n${lista}\n\n¡A hornear! Avísales tú cuando quieras.`;
     }
@@ -303,5 +297,4 @@ app.listen(PORT, () => {
   console.log(`   Panel admin: http://localhost:${PORT}/admin.html`);
   console.log(`   Webhook WA:  http://localhost:${PORT}/webhook/whatsapp`);
   console.log(`\n   Estado actual: [${cal.fase.toUpperCase()}] ${cal.mensaje}`);
-  console.log(`   Para WhatsApp: npx ngrok http ${PORT}\n`);
 });
