@@ -155,7 +155,18 @@
     .field textarea { resize: vertical; min-height: 80px; }
     .field .hint { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
 
-    .bolsas-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .bolsas-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+    .azucar-toggle { display: flex; gap: 8px; margin-top: 4px; }
+    .azucar-btn {
+      flex: 1; padding: 11px;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius-md);
+      background: var(--gray-100); font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+      color: var(--gray-700);
+    }
+    .azucar-btn:hover { border-color: var(--teal); background: var(--teal-bg); color: var(--teal-dark); }
+    .azucar-btn.selected { background: var(--teal); border-color: var(--teal-dark); color: white; }
     .bolsa-btn {
       aspect-ratio: 1; border-radius: 10px;
       border: 1.5px solid var(--gray-200); background: var(--gray-100);
@@ -169,7 +180,7 @@
     @media (max-width: 430px) {
       .page { padding: 1rem 0.75rem; }
 
-      /* Bolsas: 3 columnas × 2 filas */
+      /* Bolsas: 3+2 en móvil */
       .bolsas-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
       .bolsa-btn { font-size: 18px; aspect-ratio: auto; padding: 12px 4px; }
       .bolsa-btn span { font-size: 10px; }
@@ -262,7 +273,7 @@
       <span class="hint" id="cupos-hint"></span>
     </div>
     <div class="cupos-condicion">
-      La horneada parte solo si se completan los 6 cupos. Si no se llena, se cancela y te avisamos por WhatsApp.
+      La horneada parte solo si se completan los 5 cupos. Si no se llena, se cancela y te avisamos por WhatsApp.
     </div>
   </div>
 
@@ -276,7 +287,7 @@
 
   <!-- ALERTA ÚLTIMO DÍA -->
   <div class="alerta-cierre" id="alerta-cierre">
-    ⚠️ <strong>¡Último día!</strong> Las inscripciones cierran hoy a las 23:59. Si no se completan los 6 cupos, la horneada se cancela.
+    ⚠️ <strong>¡Último día!</strong> Las inscripciones cierran hoy a las 23:59. Si no se completan los 5 cupos, la horneada se cancela.
   </div>
 
   <!-- FORMULARIO -->
@@ -303,6 +314,14 @@
       <label>¿Cuántas bolsas quieres?</label>
       <div class="bolsas-grid" id="bolsas-grid"></div>
       <div class="hint" style="margin-top:8px">Cada bolsa trae 12 calzones rotos</div>
+    </div>
+
+    <div class="field">
+      <label>¿Con azúcar flor?</label>
+      <div class="azucar-toggle">
+        <button class="azucar-btn" id="azucar-si" onclick="seleccionarAzucar(true)">Sí</button>
+        <button class="azucar-btn" id="azucar-no" onclick="seleccionarAzucar(false)">No</button>
+      </div>
     </div>
 
     <div class="pago-nota">
@@ -391,6 +410,7 @@
   let cuposOcupados = 0;
   let bolsasSeleccionadas = 0;
   let inscripcionAbierta = false;
+  let azucarFlor = null;
 
   async function cargarEstado() {
     try {
@@ -409,12 +429,12 @@
 
   function renderEstado() {
     const cal    = obtenerEstadoCliente();
-    const libres = 6 - cuposOcupados;
+    const libres = 5 - cuposOcupados;
 
     // Slots
     const slotsEl = document.getElementById('slots');
     slotsEl.innerHTML = '';
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 5; i++) {
       const s = document.createElement('div');
       s.className = 'slot' + (i < cuposOcupados ? ' ocupado' : '');
       slotsEl.appendChild(s);
@@ -422,7 +442,7 @@
 
     // Texto cupos
     document.getElementById('cupos-texto').textContent =
-      libres === 0 ? 'Todos los cupos llenos' : `${libres} de 6 cupos disponibles`;
+      libres === 0 ? 'Todos los cupos llenos' : `${libres} de 5 cupos disponibles`;
     document.getElementById('cupos-hint').textContent =
       cal.diaEntrega ? `Entrega el ${cal.diaEntrega}` : '';
 
@@ -480,7 +500,7 @@
   function renderBolsas(libres) {
     const grid = document.getElementById('bolsas-grid');
     grid.innerHTML = '';
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 5; i++) {
       const btn = document.createElement('button');
       btn.className = 'bolsa-btn' + (i === bolsasSeleccionadas ? ' selected' : '');
       btn.innerHTML = `${i}<span>${formatPeso(i * PRECIO_BOLSA)}</span>`;
@@ -488,6 +508,14 @@
       btn.onclick = () => { bolsasSeleccionadas = i; renderBolsas(libres); actualizarResumen(); validarForm(); };
       grid.appendChild(btn);
     }
+  }
+
+  function seleccionarAzucar(valor) {
+    azucarFlor = valor;
+    document.getElementById('azucar-si').className = 'azucar-btn' + (valor === true  ? ' selected' : '');
+    document.getElementById('azucar-no').className = 'azucar-btn' + (valor === false ? ' selected' : '');
+    actualizarResumen();
+    validarForm();
   }
 
   function actualizarResumen() {
@@ -504,6 +532,9 @@
           <span>Entrega</span><span>${cal.diaEntrega || '—'} desde las 14:00</span>
         </div>
         <div class="resumen-fila">
+          <span>Azúcar flor</span><span>${azucarFlor === true ? 'Sí' : azucarFlor === false ? 'No' : '—'}</span>
+        </div>
+        <div class="resumen-fila">
           <span>Pago</span><span>Contra entrega</span>
         </div>`;
     } else {
@@ -515,7 +546,7 @@
     const ok = document.getElementById('nombre').value.trim() &&
                document.getElementById('telefono').value.trim() &&
                document.getElementById('direccion').value.trim() &&
-               bolsasSeleccionadas > 0 && inscripcionAbierta;
+               bolsasSeleccionadas > 0 && azucarFlor !== null && inscripcionAbierta;
     document.getElementById('btn-reservar').disabled = !ok;
   }
 
@@ -529,10 +560,11 @@
     btn.disabled = true;
 
     const pedido = {
-      nombre:   document.getElementById('nombre').value.trim(),
-      telefono: document.getElementById('telefono').value.trim(),
-      direccion:document.getElementById('direccion').value.trim(),
-      bolsas:   bolsasSeleccionadas,
+      nombre:     document.getElementById('nombre').value.trim(),
+      telefono:   document.getElementById('telefono').value.trim(),
+      direccion:  document.getElementById('direccion').value.trim(),
+      bolsas:     bolsasSeleccionadas,
+      azucarFlor: azucarFlor,
     };
 
     try {
@@ -553,9 +585,10 @@
     document.getElementById('form-card').style.display = 'none';
     document.getElementById('success-card').classList.add('visible');
     document.getElementById('success-msg').textContent =
-      `Hola ${pedido.nombre}, tu reserva de ${bolsasSeleccionadas} bolsa${bolsasSeleccionadas > 1 ? 's' : ''} quedó registrada. ` +
+      `Hola ${pedido.nombre}, tu reserva de ${bolsasSeleccionadas} bolsa${bolsasSeleccionadas > 1 ? 's' : ''} ` +
+      `${azucarFlor ? 'con' : 'sin'} azúcar flor quedó registrada. ` +
       (cal.diaEntrega ? `Entrega el ${cal.diaEntrega} desde las 14:00. ` : '') +
-      `Recuerda que la horneada parte solo si se completan los 6 cupos.`;
+      `Recuerda que la horneada parte solo si se completan los 5 cupos.`;
   }
 
   // ── INIT ──────────────────────────────────────────────────────────────
