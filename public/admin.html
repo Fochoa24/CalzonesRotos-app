@@ -4,217 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel · Calzones Rotos</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --teal:      #1D9E75;
-      --teal-dark: #0F6E56;
-      --teal-bg:   #E1F5EE;
-      --teal-text: #04342C;
-      --amber:     #BA7517;
-      --amber-bg:  #FAEEDA;
-      --red:       #A32D2D;
-      --red-bg:    #FCEBEB;
-      --gray-50:   #F8F7F2;
-      --gray-100:  #EFEFEA;
-      --gray-200:  #DDDDD8;
-      --gray-400:  #9B9A93;
-      --gray-700:  #3D3D3A;
-      --gray-900:  #1A1A18;
-      --radius-md: 10px;
-      --radius-lg: 16px;
-    }
-
-    body {
-      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--gray-50); color: var(--gray-900);
-      min-height: 100vh; padding-bottom: 4rem;
-    }
-
-    header {
-      background: var(--gray-900); color: white;
-      padding: 1rem 1.25rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    header h1 { font-size: 17px; font-weight: 600; }
-    header span { font-size: 12px; color: rgba(255,255,255,.5); }
-
-    .page { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem; }
-
-    /* MÉTRICAS */
-    .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-    .metrica {
-      background: white; border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg); padding: 1rem 1.1rem;
-    }
-    .metrica-label { font-size: 11px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .8px; color: var(--gray-400); margin-bottom: 4px; }
-    .metrica-valor { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
-    .metrica-valor.verde { color: var(--teal); }
-    .metrica-sub { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
-
-    /* BARRA CUPOS */
-    .cupos-barra-card {
-      background: white; border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg); padding: 1.1rem 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    .cupos-barra-titulo { font-size: 13px; font-weight: 600; margin-bottom: 10px;
-      display: flex; justify-content: space-between; }
-    .barra-outer { background: var(--gray-100); border-radius: 8px; height: 18px; overflow: hidden; }
-    .barra-inner { background: var(--teal); height: 100%; border-radius: 8px;
-      transition: width .5s ease; display: flex; align-items: center; padding-left: 8px; }
-    .barra-inner span { font-size: 11px; font-weight: 700; color: white; }
-
-    /* ACCIONES */
-    .acciones { display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-    .btn {
-      padding: 10px 18px; border-radius: var(--radius-md);
-      font-size: 14px; font-weight: 600; font-family: inherit;
-      cursor: pointer; border: none; transition: all .15s;
-    }
-    .btn:active { transform: scale(.98); }
-    .btn-primario { background: var(--teal); color: white; }
-    .btn-primario:hover { background: var(--teal-dark); }
-    .btn-primario:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
-    .btn-peligro { background: var(--red-bg); color: var(--red); border: 1px solid #F7C1C1; }
-    .btn-peligro:hover { background: #F7C1C1; }
-    .btn-secundario { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-200); }
-    .btn-secundario:hover { background: var(--gray-200); }
-
-    /* PEDIDOS */
-    .seccion-titulo { font-size: 13px; font-weight: 600; color: var(--gray-400);
-      text-transform: uppercase; letter-spacing: .7px; margin-bottom: .75rem; }
-
-    .pedido-card {
-      background: white; border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg); padding: 1rem 1.25rem;
-      margin-bottom: .75rem; transition: border-color .2s;
-    }
-    .pedido-card.entregado { opacity: .55; }
-    .pedido-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-    .pedido-nombre { font-size: 16px; font-weight: 600; }
-    .pedido-badge {
-      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
-    }
-    .badge-pendiente { background: var(--amber-bg); color: var(--amber); }
-    .badge-confirmado { background: var(--teal-bg); color: var(--teal-dark); }
-    .badge-entregado { background: var(--gray-100); color: var(--gray-400); }
-
-    .pedido-datos { font-size: 13px; color: var(--gray-700); line-height: 1.8; }
-    .pedido-datos span { color: var(--gray-400); }
-
-    .pedido-acciones { margin-top: 10px; display: flex; gap: 8px; }
-    .pedido-btn {
-      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
-      cursor: pointer; border: none; font-family: inherit; transition: all .15s;
-    }
-    .pedido-btn-wa { background: #25D366; color: white; }
-    .pedido-btn-wa:hover { background: #1DA851; }
-    .pedido-btn-entregar { background: var(--teal-bg); color: var(--teal-dark); border: 1px solid #9FE1CB; }
-    .pedido-btn-entregar:hover { background: #9FE1CB; }
-    .pedido-btn-entregar:disabled { opacity: .4; cursor: not-allowed; }
-
-    /* CONFIRM MODAL */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.5); z-index: 100;
-      align-items: center; justify-content: center;
-    }
-    .modal-overlay.visible { display: flex; }
-    .modal {
-      background: white; border-radius: var(--radius-lg);
-      padding: 1.75rem; max-width: 380px; width: 90%; margin: 1rem;
-    }
-    .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-    .modal p  { font-size: 14px; color: var(--gray-700); line-height: 1.6; margin-bottom: 1.25rem; }
-    .modal-btns { display: flex; gap: 10px; }
-    .modal-btns .btn { flex: 1; text-align: center; }
-
-    /* VACÍO */
-    .empty { text-align: center; padding: 2.5rem; color: var(--gray-400); font-size: 14px; }
-    .empty-icon { font-size: 36px; margin-bottom: .75rem; }
-
-    /* ERROR SERVIDOR */
-    .error-servidor {
-      background: var(--red-bg); border: 1px solid #F7C1C1;
-      border-radius: var(--radius-lg); padding: 1.1rem 1.25rem;
-      margin-bottom: 1.25rem; display: none;
-    }
-    .error-servidor.visible { display: flex; align-items: center; gap: 12px; }
-    .error-servidor-texto { flex: 1; font-size: 13px; color: var(--red); }
-    .error-servidor-texto strong { display: block; font-size: 14px; margin-bottom: 3px; }
-    .btn-reintentar {
-      padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
-      background: var(--red); color: white; border: none; cursor: pointer; font-family: inherit;
-      white-space: nowrap;
-    }
-    .btn-reintentar:hover { opacity: .85; }
-
-    /* SPINNER */
-    .spinner {
-      width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4);
-      border-top-color: white; border-radius: 50%;
-      animation: spin .7s linear infinite; display: inline-block;
-      vertical-align: middle; margin-right: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* TOAST */
-    .toast {
-      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-      background: var(--gray-900); color: white;
-      padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500;
-      opacity: 0; pointer-events: none; transition: opacity .3s;
-      white-space: nowrap; z-index: 200;
-    }
-    .toast.show { opacity: 1; }
-
-    /* LOGIN */
-    .login-overlay {
-      position: fixed; inset: 0; background: var(--gray-50);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 999;
-    }
-    .login-overlay.oculto { display: none; }
-    .login-card {
-      background: white; border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg); padding: 2rem 1.75rem;
-      width: 100%; max-width: 360px;
-    }
-    .login-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-    .login-card p  { font-size: 13px; color: var(--gray-400); margin-bottom: 1.5rem; }
-    .login-field { margin-bottom: 1rem; }
-    .login-field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 5px; }
-    .login-field input {
-      width: 100%; padding: 10px 12px; font-size: 15px; font-family: inherit;
-      border: 1.5px solid var(--gray-200); border-radius: var(--radius-md);
-      outline: none; transition: border-color .2s;
-    }
-    .login-field input:focus { border-color: var(--teal); }
-    .login-error { font-size: 13px; color: var(--red); margin-bottom: .75rem; display: none; }
-    .login-error.visible { display: block; }
-    .btn-login {
-      width: 100%; padding: 12px; background: var(--teal); color: white;
-      border: none; border-radius: var(--radius-md); font-size: 15px;
-      font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s;
-    }
-    .btn-login:hover { background: var(--teal-dark); }
-    .btn-login:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
-    .btn-cerrar-sesion {
-      background: none; border: none; color: rgba(255,255,255,.5);
-      font-size: 12px; cursor: pointer; font-family: inherit;
-    }
-    .btn-cerrar-sesion:hover { color: white; }
-  </style>
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/admin.css" />
 </head>
 <body>
 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="login-overlay">
   <div class="login-card">
-    <h2>🥐 Panel de Control</h2>
+    <img class="login-logo" src="logo.png" alt="Dulce Tentación" />
+    <h2>Panel de Control</h2>
     <p>Ingresa tus credenciales para continuar</p>
     <div class="login-field">
       <label>Email</label>
@@ -230,9 +29,10 @@
 </div>
 
 <header>
-  <h1>🥐 Panel de Control</h1>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <span id="fecha-header"></span>
+  <img class="header-logo" src="logo.png" alt="Dulce Tentación" />
+  <div class="header-title"><h1>Panel de Control</h1></div>
+  <div class="header-actions">
+    <span class="header-fecha" id="fecha-header"></span>
     <button class="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar sesión</button>
   </div>
 </header>
@@ -243,7 +43,7 @@
   <div class="metricas">
     <div class="metrica">
       <div class="metrica-label">Cupos</div>
-      <div class="metrica-valor verde" id="m-cupos">0/6</div>
+      <div class="metrica-valor dorado" id="m-cupos">0/6</div>
       <div class="metrica-sub" id="m-estado">Horneada abierta</div>
     </div>
     <div class="metrica">
