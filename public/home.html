@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dulce Tentación — Repostería Artesanal</title>
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/home.css" />
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <img class="splash-logo" id="splash-logo" src="logo.png" alt="Dulce Tentación" />
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div id="main">
+
+  <header>
+    <img src="logo.png" alt="Dulce Tentación" />
+  </header>
+
+  <p class="subtitle">¿Qué se te antoja hoy?</p>
+
+  <div class="categories">
+
+    <a class="cat-card activa" href="index.html">
+      <div class="cat-icon">🥐</div>
+      <div class="cat-info">
+        <div class="cat-name">Calzones Rotos</div>
+        <div class="cat-desc">Frescos y crocantes, recién horneados.<br>12 unidades por bolsa · Entrega a domicilio.</div>
+      </div>
+      <div class="cat-arrow">›</div>
+    </a>
+
+    <div class="cat-card proximamente">
+      <div class="cat-icon">🍪</div>
+      <div class="cat-info">
+        <div class="cat-name">Galletas</div>
+        <div class="cat-desc">Surtido artesanal de galletas.</div>
+      </div>
+      <span class="badge-pronto">Próximamente</span>
+    </div>
+
+    <div class="cat-card proximamente">
+      <div class="cat-icon">🎂</div>
+      <div class="cat-info">
+        <div class="cat-name">Queques</div>
+        <div class="cat-desc">Queques caseros para cada ocasión.</div>
+      </div>
+      <span class="badge-pronto">Próximamente</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const splash     = document.getElementById('splash');
+  const splashLogo = document.getElementById('splash-logo');
+  const main       = document.getElementById('main');
+
+  // Logo aparece suavemente
+  requestAnimationFrame(() => splashLogo.classList.add('visible'));
+
+  // Splash se desvanece y aparece el contenido
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    main.classList.add('visible');
+    setTimeout(() => splash.classList.add('hidden'), 700);
+  }, 2000);
+</script>
+
+</body>
+</html>

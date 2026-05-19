@@ -1,0 +1,29 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold:       #C8841A;
+  --gold-dark:  #9B6012;
+  --cream:      #FAF4E8;
+  --cream-warm: #F5D78E;
+  --cream-dark: #EDE0C4;
+  --brown:      #7B3213;
+  --amber:      #BA7517;
+  --amber-bg:   #FBF0D9;
+  --amber-text: #412402;
+  --red:        #A32D2D;
+  --red-bg:     #FCEBEB;
+  --gray-100:   #F0E6CF;
+  --gray-200:   #EDE0C4;
+  --gray-400:   #9B9A93;
+  --gray-700:   #3D3D3A;
+  --gray-900:   #1A1A18;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+}
+
+body {
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--cream);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
