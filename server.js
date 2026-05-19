@@ -20,13 +20,13 @@ const cron    = require('node-cron');
 const path    = require('path');
 const admin   = require('firebase-admin');
 
-const { obtenerEstado, esHoraCierre } = require('./calendario');
+const { obtenerEstado, esHoraCierre } = require('./src/calendario');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── FIREBASE ADMIN / FIRESTORE ────────────────────────────────────────────
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
